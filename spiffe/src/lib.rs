@@ -69,6 +69,7 @@
 //! | `jwt` | JWT SVID and bundle types + parsing |
 //! | `jwt-verify-rust-crypto` | Offline JWT verification (rust-crypto backend) |
 //! | `jwt-verify-aws-lc-rs` | Offline JWT verification (aws-lc-rs backend) |
+//! | `jwt-verify-openssl` | Offline JWT verification, no jsonwebtoken backend compiled in; the embedder installs its own `jsonwebtoken::crypto::CryptoProvider` (e.g. OpenSSL-backed) before first use |
 //! | `logging` | Log-based observability |
 //! | `tracing` | Tracing-based observability |
 //!
@@ -164,10 +165,14 @@ mod prelude;
 pub mod transport;
 
 // Compile-time guards for feature combinations
-#[cfg(all(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+#[cfg(any(
+    all(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"),
+    all(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-openssl"),
+    all(feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"),
+))]
 compile_error!(
-    "Cannot enable both JWT verification backends simultaneously. \
-     Choose exactly one: `jwt-verify-rust-crypto` or `jwt-verify-aws-lc-rs`."
+    "Cannot enable more than one JWT verification backend feature simultaneously. \
+     Choose exactly one: `jwt-verify-rust-crypto`, `jwt-verify-aws-lc-rs`, or `jwt-verify-openssl`."
 );
 
 #[cfg(any(

@@ -19,12 +19,12 @@ use zeroize::Zeroize;
 
 use crate::spiffe_id::{SpiffeId, SpiffeIdError, TrustDomain};
 
-#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
 use crate::bundle::jwt::{JwtAuthority, JwtBundle};
-#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
 use crate::bundle::BundleSource;
 
-#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+#[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
 use jsonwebtoken::{DecodingKey, Validation};
 
 /// Algorithms supported for JWT-SVIDs according to the SPIFFE JWT-SVID profile.
@@ -75,7 +75,7 @@ impl JwtAlg {
         })
     }
 
-    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
     const fn to_jsonwebtoken(self) -> Option<jsonwebtoken::Algorithm> {
         match self {
             Self::RS256 => Some(jsonwebtoken::Algorithm::RS256),
@@ -191,12 +191,12 @@ pub enum JwtSvidError {
     JwtVerifyNotEnabled,
 
     /// The authority JWK JSON could not be parsed.
-    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
     #[error("cannot parse authority JWK JSON: {0}")]
     InvalidAuthorityJwk(#[from] serde_json::Error),
 
     /// Error returned by the JWT decoding library.
-    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
     #[error("cannot decode token")]
     InvalidToken(#[from] jsonwebtoken::errors::Error),
 }
@@ -323,7 +323,7 @@ impl JwtSvid {
     /// - the signature verification fails,
     /// - the token is expired, or the audience does not match `expected_audience`,
     /// - the bundle source returns an error while fetching bundles.
-    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
     pub fn parse_and_validate<B, T>(
         token: &str,
         bundle_source: &B,
@@ -423,7 +423,7 @@ impl JwtSvid {
         self.hint.as_deref()
     }
 
-    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs"))]
+    #[cfg(any(feature = "jwt-verify-rust-crypto", feature = "jwt-verify-aws-lc-rs", feature = "jwt-verify-openssl"))]
     fn find_jwt_authority<B>(
         bundle_source: &B,
         trust_domain: &TrustDomain,
