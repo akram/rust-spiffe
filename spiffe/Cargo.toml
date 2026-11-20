@@ -125,6 +125,13 @@ jwt = ["dep:serde", "dep:serde_json", "dep:time", "dep:base64ct", "dep:zeroize"]
 # JWT signature verification via `jsonwebtoken` (select exactly one backend).
 jwt-verify-rust-crypto = ["jwt", "dep:jsonwebtoken", "jsonwebtoken/rust_crypto"]
 jwt-verify-aws-lc-rs = ["jwt", "dep:jsonwebtoken", "jsonwebtoken/aws_lc_rs"]
+# No jsonwebtoken crypto backend is compiled in here. The embedder must call
+# `jsonwebtoken::crypto::CryptoProvider::install_default()` with its own
+# provider (e.g. an OpenSSL-backed one) before the first JWT-SVID
+# verification, or jsonwebtoken's own fallback provider panics on first use.
+# `decode`/`DecodingKey::from_jwk` are provider-agnostic in jsonwebtoken 10,
+# so this crate's JWT verification code needs no change either way.
+jwt-verify-openssl = ["jwt", "dep:jsonwebtoken"]
 
 # Observability backends (optional).
 logging = ["dep:log"]
